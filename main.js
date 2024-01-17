@@ -1,19 +1,19 @@
 const carCanvas=document.getElementById("carCanvas");
-carCanvas.width=300;
+carCanvas.width=200;
 const networkCanvas=document.getElementById("networkCanvas");
-networkCanvas.width=500;
+networkCanvas.width=400;
 
 const carCtx = carCanvas.getContext("2d");
 const networkCtx = networkCanvas.getContext("2d");
 
 const road=new Road(carCanvas.width/2,carCanvas.width*0.9);
 
-const N=100;
+const N=100; // Number of cars per generation
 const cars=generateCars(N);
 let bestCar=cars[0];
 if(localStorage.getItem("bestBrain")){
     for(let i=0;i<cars.length;i++){
-        cars[i].brain=JSON.parse(
+        cars[i].brain = JSON.parse(
             localStorage.getItem("bestBrain"));
         if(i!=0){
             NeuralNetwork.mutate(cars[i].brain,0.1);
@@ -21,15 +21,28 @@ if(localStorage.getItem("bestBrain")){
     }
 }
 
+// The first car of the traffic is always right in front of us
 let traffic=[
-    new Car(road.getLaneCenter(1),-100,30,50,"DUMMY",2),
+    new Car(road.getLaneCenter(1),-100,40,50,"DUMMY",2),
 ];
 
-for (let i = 1; i < 100; i++) {
+// Adds some randomness to the traffic
+// I added this to test if the brain can learn to avoid dynamically or just learn a pattern
+for (let i = 1; i < 200; i++) {
     let lane = Math.floor(Math.random() * 3);
-    traffic.push(
-        new Car(road.getLaneCenter(lane), (i * 200) * -1, 30, 50, "DUMMY", 2)
-    );
+    if (lane == 0) {
+        traffic.push(
+            new Car(road.getLaneCenter(lane), (i * 200) * -1, 40, 50, "DUMMY", 2.4) // Car fast lane
+        );
+    } else if (lane == 1) {
+        traffic.push(
+            new Car(road.getLaneCenter(lane), (i * 200) * -1, 40, 50, "DUMMY", 2.2) // Car middle lane
+        );
+    } else if (lane == 2) {
+        traffic.push(
+            new Car(road.getLaneCenter(lane), (i * 200) * -1, 40, 100, "DUMMY", 2) // Truck style
+        );
+    }
 }
 
 animate();
